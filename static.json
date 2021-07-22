@@ -1,6 +1,3 @@
 {
-    "routes": {
-        "/*.html":"public/page.html"
-    }
-    
+   "root":"public/"   
 }
