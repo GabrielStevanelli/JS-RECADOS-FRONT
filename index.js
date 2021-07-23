@@ -1,8 +1,34 @@
-let mensagens = JSON.parse(localStorage.getItem("mensagens")) || [];
+document.getElementById('adiciona').onclick=adiciona;
+let mensagens = [];
+
+async function getMessage(){
+    const {data: mensagem} = await axios.get('https://recados-api.herokuapp.com/listar')
+
+    mensagens = mensagem;
+    geraLista();
+}
+
+async function adiciona(){
+    let titulo = document.getElementById("titulo").value;
+    let mensagem = document.getElementById("mensagem").value;
+
+    if(titulo == '' || mensagem == ''){
+        return;
+    }
+
+    const {data: {id,title,message}} = await axios.post('https://recados-api.herokuapp.com/adicionar',{title: titulo,message: mensagem})
+    mensagens.push({id,title,message});
+    getMessage()
+    
+}
+
+/*let mensagens = JSON.parse(localStorage.getItem("mensagens")) || [];*/
 
 function geraLista(){
     let tBody = document.getElementById("tbody");
-    for(let i = 0; i < mensagens.length; i++){
+    tBody.innerHTML = "";
+    for(let message of mensagens){
+
         let tr = document.createElement("tr");
         let th = document.createElement("th");
         let tdTitulo = document.createElement("td");
@@ -11,13 +37,10 @@ function geraLista(){
 
         let deleteBtn = document.createElement("button");
         deleteBtn.setAttribute("class","btn btn-danger mx-2");
-        deleteBtn.setAttribute("id",i+1);
-        deleteBtn.onclick = function () {
-            let filtro = mensagens.filter(function(value){
-                return value != mensagens[i];
-            });
-            localStorage.setItem('mensagens',JSON.stringify(filtro));
-            window.location.reload();
+        deleteBtn.setAttribute("id",message.id);
+        deleteBtn.onclick = async function () {
+            await axios.delete(`https://recados-api.herokuapp.com/apaga/${message.id}`)
+            getMessage()
         };
         deleteBtn.innerHTML = "Excluir"
 
@@ -28,16 +51,15 @@ function geraLista(){
             modal.style.display = "block";
             let editaModalBtn = document.getElementById("editaModal");
 
-            document.getElementById("tituloModal").value = mensagens[i].titulo;
-            document.getElementById("mensagemModal").value = mensagens[i].mensagem;
+            document.getElementById("tituloModal").value = message.title;
+            document.getElementById("mensagemModal").value = message.message;
 
-            editaModalBtn.onclick = function () {
+            editaModalBtn.onclick = async function () {
                 let titulo = document.getElementById("tituloModal").value;
                 let mensagem = document.getElementById("mensagemModal").value 
-                let filtro = mensagens;
-                filtro[i] = {titulo,mensagem};
-                localStorage.setItem('mensagens',JSON.stringify(filtro));
-                window.location.reload();
+                await 
+                axios.put(`https://recados-api.herokuapp.com/mudar/${message.id}`,{title: titulo,message: mensagem});
+                getMessage()
             }
         }
         editBtn.innerHTML = "Editar"
@@ -45,9 +67,9 @@ function geraLista(){
         tdGerenciar.appendChild(editBtn);
         tdGerenciar.appendChild(deleteBtn);
 
-        th.innerHTML = i+1;
-        tdTitulo.innerHTML = mensagens[i].titulo;
-        tdMensagem.innerHTML = mensagens[i].mensagem;
+        th.innerHTML = message.id;
+        tdTitulo.innerHTML = message.title;
+        tdMensagem.innerHTML = message.message;
 
         tr.appendChild(th);
         tr.appendChild(tdTitulo);
@@ -58,17 +80,7 @@ function geraLista(){
     }
 }
 
-geraLista();
-
-function adiciona(){
-    let titulo = document.getElementById("titulo").value;
-    let mensagem = document.getElementById("mensagem").value;
-
-    window.location.reload();
-
-    mensagens.push({titulo,mensagem});
-    salvaLocalStorage();
-}
+getMessage();
 
 function salvaLocalStorage(){
     localStorage.setItem('mensagens',JSON.stringify(mensagens));
