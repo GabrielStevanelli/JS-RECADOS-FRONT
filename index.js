@@ -2,7 +2,7 @@ document.getElementById('adiciona').onclick=adiciona;
 let mensagens = [];
 
 async function getMessage(){
-    const {data: mensagem} = await axios.get('https://recados-api.herokuapp.com/listar')
+    const {data: mensagem} = await axios.get('https://banco-api.herokuapp.com/listar')
 
     mensagens = mensagem;
     geraLista();
@@ -16,7 +16,7 @@ async function adiciona(){
         return;
     }
 
-    const {data: {id,title,message}} = await axios.post('https://recados-api.herokuapp.com/adicionar',{title: titulo,message: mensagem})
+    const {data: {id,title,message}} = await axios.post('https://banco-api.herokuapp.com/adicionar',{title: titulo,message: mensagem})
     mensagens.push({id,title,message});
     getMessage()
     
@@ -39,7 +39,7 @@ function geraLista(){
         deleteBtn.setAttribute("class","btn btn-danger mx-2");
         deleteBtn.setAttribute("id",message.id);
         deleteBtn.onclick = async function () {
-            await axios.delete(`https://recados-api.herokuapp.com/apaga/${message.id}`)
+            await axios.delete(`https://banco-api.herokuapp.com/apaga/${message.id}`)
             getMessage()
         };
         deleteBtn.innerHTML = "Excluir"
@@ -58,7 +58,7 @@ function geraLista(){
                 let titulo = document.getElementById("tituloModal").value;
                 let mensagem = document.getElementById("mensagemModal").value 
                 await 
-                axios.put(`https://recados-api.herokuapp.com/mudar/${message.id}`,{title: titulo,message: mensagem});
+                axios.put(`https://banco-api.herokuapp.com/mudar/${message.id}`,{title: titulo,message: mensagem});
                 getMessage()
             }
         }
